@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>WFP Libya Food Distributions</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.2.1/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.2.1/mapbox-gl.css' rel='stylesheet' />
+    <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+        #legend {
+              top:2%;
+              left:2%;
+            }
+        #upper { text-transform: uppercase}
+
+        .legend {
+        background-color: #fff;
+        border-radius: 3px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.10);
+        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+        padding: 10px;
+        position: absolute;
+        left: 10px;
+        z-index: 1;
+        }
+
+        .legend h4 {
+        margin: 0 0 10px;
+        }
+
+        .legend div span {
+        border-radius: 50%;
+        display: inline-block;
+        height: 10px;
+        margin-left: 5px;
+        width: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+  <div class="form-group">
+  <div class='legend'>
+    <form method="POST" action="{{ url_for('map_rrm') }}">
+      <input type="submit" value="RRM Map (Cumulative)">
+    </form>
+
+
+   <p><h6>Total Beneficiaries: {{total}}</h6></p>
+   <form method="POST" action="{{ url_for('maps') }}">
+<b>Activities:</b>
+ {% for activity in activities %}
+ <br>
+ <input type="checkbox" name="activity" value="{{activity.name}}" {{'checked="checked"' if activity.name in select_activities else ''}}>{{activity.name}}
+ {% endfor %}
+ </select>
+ <br>
+   <b>Month:</b> <br>
+   <b><input type="number" step="1" name="month" min="1" max="12" value="{{month}}"></b>
+   <br>
+   <b>Year:</b> <br>
+   <b><input type="number" step="1" name="year" min="2019" max="2030" value="{{year}}"></b>
+    <br>
+    <b>Figures:</b> <br>
+    <input type="radio" name="reached" value="hh_reached" {{'checked="checked"' if figure == "hh_reached" else ''}}> Reached
+    <br>
+    <input type="radio" name="reached" value="hh_planned" {{'checked="checked"' if figure == "hh_planned" else ''}}> Planned
+    <br>
+    <b>Aggregation:</b> <br>
+    <input type="radio" name="aggregation" value="mantika" {{'checked="checked"' if aggregation_var == "mantika" else ''}}> Mantika
+    <br>
+    <input type="radio" name="aggregation" value="baladiya" {{'checked="checked"' if aggregation_var == "baladiya" else ''}}> Baladiya
+    <br>
+    <input type="radio" name="aggregation" value="distributionpoint" {{'checked="checked"' if aggregation_var == "distributionpoint" else ''}}> Distribution Point
+    <br>
+    <b>Monitoring:</b> <br>
+    <input type="radio" name="monitoring" value="all" {{'checked="checked"' if monitoring == "all" else ''}}> All
+    <br>
+    <input type="radio" name="monitoring" value="wfp" {{'checked="checked"' if monitoring == "wfp" else ''}}> WFP
+    <br>
+    <input type="radio" name="monitoring" value="moomken" {{'checked="checked"' if monitoring == "moomken" else ''}}> Third-Party
+    <br>
+    <b>Display:</b> <br>
+    <input type="radio" name="display" value="circles" {{'checked="checked"' if display == "circles" else ''}}> Circles
+    <br>
+    <input type="radio" name="display" value="points" {{'checked="checked"' if display == "points" else ''}}> Points
+    <br><br>
+   <input type="submit" value="Change">
+  <input type="submit" name="download" value="Export to Excel">
+    </form>
+
+
+     <br>  <br>
+     <div><span style='background-color: #2A93FC'></span> GFD</div>
+     <div><span style='background-color: #FF0000'></span> RRM</div>
+     <div><span style='background-color: #2AFC93'></span> School Feeding</div>
+     <div><span style='background-color: #FC932A'></span> Livelihood</div>
+     <div><span style='background-color: #FC2AFC'></span> Migrants</div>
+   </div>
+ </div>
+
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoicGFzcXVpZXJqYiIsImEiOiJjaml1NjRkcmsxbnB2M3Btc3lzc2UwMmk4In0.WXzslqx4xB4fWBeBRU0AGw';
+var map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/pasquierjb/cjl2dra7b8re72slkbn8qefmj',
+  center: [15.661, 27.356],
+  zoom: 5,
+  maxZoom: 13,
+  minZoom: 4
+});
+
+map.on("load", function() {
+    map.addSource("ditributions", {
+        "type": "geojson",
+        "data": {{geojson|tojson|safe}}
+    });
+
+    map.addLayer({
+        "id": "distrib-circles",
+        "type": "circle",
+        "source": "ditributions",
+        "paint": {
+            "circle-radius": ['*',['get', 'circle_size'], 40],
+            "circle-color": ['get', 'circle_color'],
+            'circle-opacity': ['get', 'circle_opacity']
+        },
+    });
+
+    map.addLayer({
+        "id": "distrib-legend",
+        "type": "symbol",
+        "source": "ditributions",
+        "layout": {
+          "text-field": ['concat', ["get", "{{aggregation_var}}"], ": ", ["get", "ind_str"]],
+          "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+          "text-offset": [0, 0.6],
+          "text-anchor": "top",
+          "text-size": 15,
+          "symbol-sort-key": ['-', 0, ["get", "ind"]],
+        },
+          "paint": {
+            "text-color": "#000000",
+            "text-halo-color": "#FFFFFF",
+            "text-opacity": ['get', 'circle_opacity'],
+            "text-halo-width":0.8
+          }
+    });
+
+});
+
+</script>
+
+</body>
+</html>

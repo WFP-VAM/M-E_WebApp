@@ -1,0 +1,12 @@
+Flask
+pandas
+gunicorn
+flask_sqlalchemy
+shapely
+psycopg2
+flask_basicauth
+geoalchemy2
+flask_excel
+xlwt
+pyexcel-xls
+geojson

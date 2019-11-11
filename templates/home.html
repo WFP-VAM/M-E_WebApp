@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <title>WFP Libya Distribution Point Manager</title>
+
+    <style>
+    .no-filter-control {
+      height: 34px;
+    }
+
+    .filter-control {
+      margin: 0 2px 2px 2px;
+    }
+    </style>
+
+  </head>
+  <body>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap Table and Bootstrap Table Filter Control -->
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.4/dist/bootstrap-table.min.css">
+    <script src="https://unpkg.com/bootstrap-table@1.15.4/dist/bootstrap-table.min.js"></script>
+    <script src="{{ url_for('static', filename='bootstrap-table-filter-control.js') }}"></script>
+
+    <h1>WFP Libya Distribution Point Manager</h1>
+
+      <br>
+      <div class="container">
+      <div class="d-inline-block">
+        <form method="POST" action="{{ url_for('monthly_distrib', activity='GFD', month=month, year=year) }}">
+            <button type="submit" class="btn btn-primary">Monthly Distribution Figures</button>
+        </form>
+      </div>
+
+      <div class="d-inline-block">
+        <form method="POST" action="{{ url_for('distrib_rrm') }}">
+            <button type="submit" class="btn btn-primary">Cumulative Distribution Figures (RRM)</button>
+        </form>
+      </div>
+
+      <div class="d-inline-block">
+        <form method="POST" action="{{ url_for('maps') }}">
+            <button type="submit" class="btn btn-primary">Maps</button>
+        </form>
+      </div>
+      </div>
+
+<br>
+
+  <div class="container">
+    <h2>New Distribution Point</h2>
+
+
+
+          <form method="POST">
+
+            <div class="form-group">
+              <label for="name_detailed">Name (detailed):</label>
+              <input type="text" class="form-control" name="name_detailed">
+            </div>
+
+            <div class="form-group">
+              <label for="selectcp">CP:</label>
+
+              <select class="form-control" name="selectcp">
+              {% for partner in partners %}
+                <option value ={{partner.name}}>{{partner.name}}</option>
+              {% endfor %}
+              </select>
+
+                <input type="submit" value="Add new partner" formaction="{{ url_for('wfp_list', type="partner") }}">
+
+            </div>
+
+            <div class="form-group">
+              <label for="selectactivity">Activity:</label>
+              <select class="form-control" name="selectactivity">
+              {% for activity in activities %}
+                <option value ={{activity.name}}>{{activity.name}}</option>
+              {% endfor %}
+              </select>
+
+
+                <input type="submit" value="Add new activity" formaction="{{ url_for('wfp_list', type="activity") }}">
+
+
+            </div>
+
+            <fieldset class="form-group">
+              Population Type:
+              <div class="form-check"><input type="checkbox" name="idps" value="True"> <label for="idps">IDPs</label></div>
+              <div class="form-check"><input type="checkbox" name="returnees" value="True"> <label for="returnees">Returnees</label></div>
+              <div class="form-check"><input type="checkbox" name="nondisplaced" value="True"> <label for="nondisplaced">Non-Displaced</label></div>
+              <div class="form-check"><input type="checkbox" name="migrants" value="True"> <label for="migrants">Migrants</label></div>
+            </fieldset>
+
+            <div class="form-group">
+              <label for="latitude">Latitude: </label>
+              <input type="number" class="form-control" step="0.0000001" name="latitude" min="19" max="33.5">
+            </div>
+
+            <div class="form-group">
+              <label for="longitude">Longitude:</label>
+              <input type="number" class="form-control" step="0.0000001" name="longitude" min="8.5" max="25.5">
+              <small id="GPSHelp" class="form-text text-muted"><a href='https://www.latlong.net/'> Help to find GPS coordinates </a></small>
+            </div>
+
+            <div class="form-group">
+              <label for="comments">Comments:</label>
+              <input type="text" class="form-control" name="comments">
+            </div>
+
+            <button type="submit" class="btn btn-primary" formaction="{{ url_for('update_distrib_point') }}">Add</button>
+
+          </form>
+        </div>
+
+    <br><br>
+
+<div class="container-fluid">
+
+        <h2>Database of Distribution Points </h2>
+        <p>
+          <form method="POST" action="./export">
+              <button type="submit" class="btn btn-primary">Export to Excel</button>
+          </form>
+        </p>
+        <table class="table table-borderless table-sm" data-filter-control="true" data-toggle="table"  data-height=1000>
+          <thead>
+          <tr>
+            <th data-sortable="true">ID</th>
+            <th data-sortable="true" data-filter-control="input">Distribution Name</th>
+            <th data-sortable="true" data-filter-control="select">Mantika</th>
+            <th data-sortable="true" data-filter-control="select">Baladiya</th>
+            <th data-sortable="true" data-filter-control="select">Muhalla</th>
+            <th data-sortable="true" data-filter-control="select">Partner</th>
+            <th data-sortable="true" data-filter-control="select">Activity</th>
+            <th data-sortable="true" data-filter-control="select">IDPs</th>
+            <th data-sortable="true" data-filter-control="select">Returnees</th>
+            <th data-sortable="true" data-filter-control="select">Non-Displaced</th>
+            <th data-sortable="true" data-filter-control="select">Migrants</th>
+            <th data-sortable="true">Latitude</th>
+            <th data-sortable="true">Longitude</th>
+            <th></th>
+            <th></th>
+            </tr>
+          </thead>
+
+        <tbody>
+          {% for distrib_point in all_data_db %}
+          <tr>
+            <td> {{distrib_point.id}} </td>
+              <td><input type="text" value="{{distrib_point.distributionpoint}}" name="name_detailed" form="{{distrib_point.id}}"> </td>
+            <td>{{distrib_point.mantika}}</td>
+            <td>{{distrib_point.baladiya}}</td>
+            <td>{{distrib_point.muhalla}}</td>
+            <td> {{distrib_point.partner}} </td>
+            <td> {{distrib_point.activity}} </td>
+            <td> {{distrib_point.idps}} </td>
+            <td> {{distrib_point.returnees}} </td>
+            <td> {{distrib_point.nondisplaced}} </td>
+            <td> {{distrib_point.migrants}} </td>
+            <td> <input type="text" value="{{distrib_point.latitude}}" name="latitude" form="{{distrib_point.id}}"></td>
+            <td> <input type="text" value="{{distrib_point.longitude}}" name="longitude" form="{{distrib_point.id}}"><td>
+              <form method="POST" action="{{ url_for('update_distrib_point') }}" id="{{distrib_point.id}}">
+                <input type="hidden" value="{{distrib_point.id}}" name="id">
+                <input type="submit" value="Update">
+              </form>
+            <td>  <form method="POST" action="{{ url_for('delete_distrib_point') }}">
+              <input type="hidden" value="{{distrib_point.id}}" name="id">
+              <input type="submit" value="Delete">
+            </form> </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+  </div>
+
+
+  </body>
+</html>

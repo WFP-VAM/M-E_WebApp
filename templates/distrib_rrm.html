@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <title>WFP Libya Distribution Point Manager</title>
+
+    <style>
+    .no-filter-control {
+      height: 34px;
+    }
+
+    .filter-control {
+      margin: 0 2px 2px 2px;
+    }
+    </style>
+
+  </head>
+  <body>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap Table and Bootstrap Table Filter Control -->
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.4/dist/bootstrap-table.min.css">
+    <script src="https://unpkg.com/bootstrap-table@1.15.4/dist/bootstrap-table.min.js"></script>
+    <script src="{{ url_for('static', filename='bootstrap-table-filter-control.js') }}"></script>
+
+    <h1>WFP Libya Distribution Point Manager</h1>
+
+    <br>
+
+    <div class="container">
+      <form method="POST" action="{{ url_for('home') }}">
+          <button type="submit" class="btn btn-primary">Distribution Points List</button>
+      </form>
+    </div>
+
+ <br>
+
+    <div class="container-fluid">
+
+        <h2>Database of RRM Distribution Figures </h2>
+        <div class="d-inline-block">
+          <form method="POST" action="{{ url_for('download_rrm') }}">
+              <button type="submit" class="btn btn-primary">Export to Excel</button>
+          </form>
+        </div>
+
+        <div class="d-inline-block">
+          <form method="POST" action="{{ url_for('map_rrm') }}">
+              <button type="submit" class="btn btn-primary">Map data</button>
+          </form>
+        </div>
+
+        <br><br>
+        <table class="table table-borderless table-sm" data-filter-control="true" data-toggle="table"  data-height=1000>
+        <thead>
+          <tr>
+            <th data-sortable="true">ID</th>
+            <th data-sortable="true" data-filter-control="input">Distribution Name</th>
+            <th data-sortable="true" data-filter-control="select">Mantika</th>
+            <th data-sortable="true" data-filter-control="select">Baladiya</th>
+            <th data-sortable="true" data-filter-control="select">Muhalla</th>
+            <th data-sortable="true" data-filter-control="select">Partner</th>
+            <th data-sortable="true">HH Reached</th>
+            <th data-sortable="true">Moomken</th>
+            <th data-sortable="true">WFP</th>
+            <th></th>
+            <th></th>
+            </tr>
+          </thead>
+
+        <tbody>
+          {% for distrib in data %}
+          <tr>
+            <td> {{distrib.id}} </td>
+            <td> {{distrib.distributionpoint}} </td>
+            <td>{{distrib.mantika}}</td>
+            <td>{{distrib.baladiya}}</td>
+            <td>{{distrib.muhalla}}</td>
+            <td> {{distrib.partner}} </td>
+
+  <td>
+    <input type="number" step="1" min="0" max="20000" value="{{distrib.hh_reached if distrib.hh_reached else 0}}" name="distri_new_hh_reached" form="{{distrib.id}}"></td>
+  <td>
+    <input type="checkbox" name="moomken" {{'checked="checked"' if distrib.moomken else ""}} form="{{distrib.id}}">
+  </td>
+
+  <td>
+    <input type="checkbox" name="wfp" {{'checked="checked"' if distrib.wfp else ""}} form="{{distrib.id}}">
+  </td>
+
+  <td>
+    <form method="POST" action="{{url_for('update_RRM')}}" id="{{distrib.id}}">
+    <input type="hidden" value="{{distrib.id}}" name="distri_id">
+    <input type="submit" value="Update"></form>
+ </td>
+
+
+            <td>  <form method="POST" action="{{url_for('delete_RRM') }}">
+              <input type="hidden" value="{{distrib.id}}" name="distri_id">
+              <input type="submit" value="Delete">
+            </form> </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+
+
+  </body>
+</html>
